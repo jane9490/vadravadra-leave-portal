@@ -343,3 +343,486 @@
         .btn-modal-submit {
             flex: 1;
             background: var(--store-blue);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-modal-cancel {
+            flex: 1;
+            background: var(--text-muted);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .file-link {
+            color: var(--store-blue);
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-banner">
+        <div class="store-brand">
+            <span class="fmf-badge">FMF</span>
+            <div>
+                <h1>Vadravadra Grocery Store</h1>
+                <div class="subtitle">Online Employee Leave Portal</div>
+            </div>
+        </div>
+        <div class="role-switcher">
+            <label for="userRole">Access Level:</label>
+            <select id="userRole" onchange="handleRoleChange()">
+                <option value="E1">Sanjeet Kumar (Staff Member)</option>
+                <option value="E2">Elizabeth Raju (Manager)</option>
+                <option value="E3">Makita Talei (Staff Member)</option>
+                <option value="director">Director Access (Sanjeev Naidu)</option>
+            </select>
+            <button id="logoutBtn" class="btn-logout" onclick="logoutDirector()">Log Out</button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="policy-notice">
+            <strong>Policy Reminder:</strong> If leave is taken immediately following a Public Holiday, that Public Holiday will not be paid or counted as annual leave. Any leave requested after exhausting allocated leave balances will automatically process as <strong>Leave Without Pay (LWOP)</strong>.
+        </div>
+
+        <div class="tab-bar">
+            <button class="tab-btn staff-only-tab active" onclick="switchTab(event, 'applyTab')">Apply for Leave</button>
+            <button class="tab-btn staff-only-tab" onclick="switchTab(event, 'historyTab')">My Leave Records</button>
+            <button class="tab-btn director-only-tab" id="directorTabBtn" onclick="switchTab(event, 'approvalTab')" style="display: none;">Director Approval Queue</button>
+            <button class="tab-btn director-only-tab" id="directorSummaryBtn" onclick="switchTab(event, 'summaryTab')" style="display: none;">Leave Summary Report</button>
+        </div>
+
+        <div id="applyTab" class="tab-content staff-only-content active">
+
+            <div class="balance-cards">
+                <div class="b-card">
+                    <h4>Annual Leave</h4>
+                    <div class="num" id="annualBal">10.0</div>
+                    <div class="sub">Days Available (10 Days Cap)</div>
+                </div>
+                <div class="b-card sick">
+                    <h4>Sick Sheets</h4>
+                    <div class="num" id="sickBal">10.0</div>
+                    <div class="sub">Days Available (10 Days Cap)</div>
+                </div>
+                <div class="b-card bereavement">
+                    <h4>Bereavement Leave</h4>
+                    <div class="num" id="bereavementBal">3.0</div>
+                    <div class="sub">Days Available (3 Days Cap)</div>
+                </div>
+                <div class="b-card unpaid">
+                    <h4>Leave Without Pay</h4>
+                    <div class="num" id="unpaidTaken">0.0</div>
+                    <div class="sub">Total Days Taken</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Submit Statutory Leave Application</div>
+                <form id="leaveForm" onsubmit="submitForm(event)">
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="leaveType">Leave Category</label>
+                            <select id="leaveType" required onchange="handleLeaveTypeChange()">
+                                <option value="annual">Annual Leave</option>
+                                <option value="sick">Sick Leave</option>
+                                <option value="bereavement">Bereavement Leave</option>
+                                <option value="unpaid">Leave Without Pay (LWOP)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="startDate">First Working Day Off</label>
+                            <input type="date" id="startDate" required onchange="calculateDays()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="endDate">Last Working Day Off</label>
+                            <input type="date" id="endDate" required onchange="calculateDays()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalDays">Total Days Requested</label>
+                            <input type="number" id="totalDays" min="0.5" step="0.5" readonly placeholder="Auto-calculated">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sickAttachment">Upload Sick Sheet / Document (Optional)</label>
+                            <input type="file" id="sickAttachment" accept="image/*,.pdf">
+                        </div>
+
+                        <div class="form-group full">
+                            <label for="notes">Reason / Notes (Optional)</label>
+                            <textarea id="notes" rows="2" placeholder="Provide details if required..."></textarea>
+                        </div>
+
+                    </div>
+                    <button type="submit" class="btn-submit">Submit Application to Director</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="historyTab" class="tab-content staff-only-content">
+            <div class="panel">
+                <div class="panel-title">My Application Audit Log</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ref Date</th>
+                            <th>Category</th>
+                            <th>Period</th>
+                            <th>Days</th>
+                            <th>Attachment</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="approvalTab" class="tab-content director-only-content">
+            <div class="panel">
+                <div class="panel-title">Pending Leave Requests (Director Sanjeev Naidu View)</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Applicant</th>
+                            <th>Category</th>
+                            <th>Period</th>
+                            <th>Days</th>
+                            <th>Reason & Attachment</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approvalTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="summaryTab" class="tab-content director-only-content">
+            <div class="panel">
+                <div class="panel-title">Staff Leave Summary & Audit (Director View)</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee Name</th>
+                            <th>Role</th>
+                            <th>Annual Used / Cap</th>
+                            <th>Sick Used / Cap</th>
+                            <th>Bereavement Used / Cap</th>
+                            <th>Unpaid Leave Taken</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal">
+            <h3>Director Verification</h3>
+            <p style="font-size:0.85rem; color:#64748b;">Enter password for Sanjeev Naidu access:</p>
+            <input type="password" id="directorPassword" placeholder="••••">
+            <div class="modal-buttons">
+                <button class="btn-modal-submit" onclick="verifyPassword()">Unlock</button>
+                <button class="btn-modal-cancel" onclick="cancelPasswordPrompt()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const LEAVE_CAPS = { annual: 10, sick: 10, bereavement: 3 };
+        const DIRECTOR_PASSWORD = "jane9490"; // Updated Password
+        let isDirectorAuthenticated = false;
+        let previousStaffRole = "E1";
+
+        const EMPLOYEES = [
+            { id: "E1", name: "Sanjeet Kumar", role: "Staff Member" },
+            { id: "E2", name: "Elizabeth Raju", role: "Manager" },
+            { id: "E3", name: "Makita Talei", role: "Staff Member" }
+        ];
+
+        let leaveData = JSON.parse(localStorage.getItem('vadravadra_leave_db')) || [];
+
+        function saveData() {
+            localStorage.setItem('vadravadra_leave_db', JSON.stringify(leaveData));
+        }
+
+        function switchTab(evt, tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.classList.add('active');
+            }
+        }
+
+        function handleRoleChange() {
+            const roleSelect = document.getElementById('userRole');
+            if (roleSelect.value === 'director') {
+                if (!isDirectorAuthenticated) {
+                    document.getElementById('passwordModal').style.display = 'flex';
+                    document.getElementById('directorPassword').value = '';
+                    document.getElementById('directorPassword').focus();
+                } else {
+                    enableDirectorAccess();
+                }
+            } else {
+                previousStaffRole = roleSelect.value;
+                disableDirectorAccess();
+            }
+        }
+
+        function verifyPassword() {
+            const pwdInput = document.getElementById('directorPassword').value;
+            if (pwdInput === DIRECTOR_PASSWORD) {
+                isDirectorAuthenticated = true;
+                document.getElementById('passwordModal').style.display = 'none';
+                enableDirectorAccess();
+            } else {
+                alert('Incorrect Password. Restricted to Director Sanjeev Naidu.');
+                cancelPasswordPrompt();
+            }
+        }
+
+        function cancelPasswordPrompt() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('userRole').value = previousStaffRole;
+            disableDirectorAccess();
+        }
+
+        function enableDirectorAccess() {
+            // Hide all staff components and tabs
+            document.querySelectorAll('.staff-only-tab').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.staff-only-content').forEach(el => el.classList.remove('active'));
+            
+            // Display Director tabs exclusively
+            document.querySelectorAll('.director-only-tab').forEach(el => el.style.display = 'block');
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+            
+            // Switch view to Director Approval Queue by default
+            document.getElementById('directorTabBtn').click();
+            renderTables();
+        }
+
+        function disableDirectorAccess() {
+            // Show staff tabs and hide director elements
+            document.querySelectorAll('.staff-only-tab').forEach(el => el.style.display = 'block');
+            document.querySelectorAll('.director-only-tab').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.director-only-content').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.querySelectorAll('.staff-only-tab')[0].click();
+            renderTables();
+        }
+
+        function logoutDirector() {
+            isDirectorAuthenticated = false;
+            document.getElementById('userRole').value = previousStaffRole;
+            disableDirectorAccess();
+            alert('Logged out of Director access.');
+        }
+
+        function calculateDays() {
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            if (s && e) {
+                const d1 = new Date(s);
+                const d2 = new Date(e);
+                if (d2 >= d1) {
+                    const count = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+                    document.getElementById('totalDays').value = count;
+                } else {
+                    document.getElementById('totalDays').value = 0;
+                }
+            }
+        }
+
+        function handleLeaveTypeChange() {}
+
+        function getEmployeeBalances(empId) {
+            let used = { annual: 0, sick: 0, bereavement: 0, unpaid: 0 };
+            
+            leaveData.filter(d => d.empId === empId && (d.status === 'approved' || d.status === 'pending')).forEach(item => {
+                if (used[item.type] !== undefined) {
+                    used[item.type] += item.days;
+                }
+            });
+
+            return used;
+        }
+
+        function updateBalances() {
+            const activeEmp = document.getElementById('userRole').value;
+            if (activeEmp === 'director') return;
+            const used = getEmployeeBalances(activeEmp);
+
+            document.getElementById('annualBal').innerText = Math.max(0, LEAVE_CAPS.annual - used.annual).toFixed(1);
+            document.getElementById('sickBal').innerText = Math.max(0, LEAVE_CAPS.sick - used.sick).toFixed(1);
+            document.getElementById('bereavementBal').innerText = Math.max(0, LEAVE_CAPS.bereavement - used.bereavement).toFixed(1);
+            document.getElementById('unpaidTaken').innerText = used.unpaid.toFixed(1);
+        }
+
+        function renderTables() {
+            const activeEmp = document.getElementById('userRole').value;
+            const hTable = document.getElementById('historyTable');
+            const aTable = document.getElementById('approvalTable');
+            const sTable = document.getElementById('summaryTable');
+
+            hTable.innerHTML = '';
+            aTable.innerHTML = '';
+            sTable.innerHTML = '';
+
+            const today = new Date().toISOString().split('T')[0];
+
+            leaveData.forEach(item => {
+                const attachmentCell = item.fileName ? `<span class="file-link" onclick="alert('Viewing attachment: ${item.fileName}')">📎 ${item.fileName}</span>` : 'None';
+                const typeDisplay = item.type === 'unpaid' ? 'Leave Without Pay' : item.type;
+
+                if (item.empId === activeEmp) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.appliedDate || today}</td>
+                        <td style="text-transform: capitalize;">${typeDisplay}</td>
+                        <td>${item.start} to ${item.end}</td>
+                        <td><strong>${item.days}</strong></td>
+                        <td>${attachmentCell}</td>
+                        <td><span class="status status-${item.status}">${item.status}</span></td>
+                    `;
+                    hTable.appendChild(tr);
+                }
+
+                if (item.status === 'pending') {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${item.name}</strong> (${item.role})</td>
+                        <td style="text-transform: capitalize;">${typeDisplay}</td>
+                        <td>${item.start} to ${item.end}</td>
+                        <td>${item.days}</td>
+                        <td>${item.notes || '<em>No notes</em>'}<br>Attachment: ${attachmentCell}</td>
+                        <td>
+                            <button class="btn-approve" onclick="processLeave(${item.id}, 'approved')">Approve</button>
+                            <button class="btn-reject" onclick="processLeave(${item.id}, 'rejected')">Reject</button>
+                        </td>
+                    `;
+                    aTable.appendChild(tr);
+                }
+            });
+
+            EMPLOYEES.forEach(emp => {
+                const used = getEmployeeBalances(emp.id);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${emp.name}</strong></td>
+                    <td>${emp.role}</td>
+                    <td>${used.annual} / ${LEAVE_CAPS.annual} Days</td>
+                    <td>${used.sick} / ${LEAVE_CAPS.sick} Days</td>
+                    <td>${used.bereavement} / ${LEAVE_CAPS.bereavement} Days</td>
+                    <td><strong>${used.unpaid} Days</strong></td>
+                `;
+                sTable.appendChild(tr);
+            });
+
+            if (hTable.children.length === 0) {
+                hTable.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No leave history recorded.</td></tr>';
+            }
+            if (aTable.children.length === 0) {
+                aTable.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No pending requests awaiting approval.</td></tr>';
+            }
+
+            updateBalances();
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            const days = parseFloat(document.getElementById('totalDays').value);
+            if (!days || days <= 0) {
+                alert('Please select valid start and end dates.');
+                return;
+            }
+
+            const activeEmpId = document.getElementById('userRole').value;
+            const activeEmpObj = EMPLOYEES.find(e => e.id === activeEmpId);
+
+            if (!activeEmpObj) {
+                alert('Please select a valid employee access level.');
+                return;
+            }
+
+            const selectedType = document.getElementById('leaveType').value;
+
+            let finalType = selectedType;
+            if (selectedType !== 'unpaid') {
+                const currentBalances = getEmployeeBalances(activeEmpId);
+                const available = LEAVE_CAPS[selectedType] - currentBalances[selectedType];
+                if (available <= 0) {
+                    finalType = 'unpaid';
+                    alert(`Notice: Your ${selectedType} leave quota is fully exhausted. This application has been automatically converted to Leave Without Pay (LWOP).`);
+                } else if (days > available) {
+                    alert(`Notice: You only have ${available} day(s) left for ${selectedType} leave. Please adjust your request or submit as Leave Without Pay.`);
+                    return;
+                }
+            }
+
+            const fileInput = document.getElementById('sickAttachment');
+            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : null;
+
+            const newItem = {
+                id: Date.now(),
+                empId: activeEmpObj.id,
+                name: activeEmpObj.name,
+                role: activeEmpObj.role,
+                type: finalType,
+                start: document.getElementById('startDate').value,
+                end: document.getElementById('endDate').value,
+                days: days,
+                notes: document.getElementById('notes').value || '',
+                fileName: fileName,
+                appliedDate: new Date().toISOString().split('T')[0],
+                status: 'pending'
+            };
+
+            leaveData.push(newItem);
+            saveData();
+            renderTables();
+            document.getElementById('leaveForm').reset();
+            alert('Leave application submitted for Director approval.');
+        }
+
+        function processLeave(id, newStatus) {
+            const item = leaveData.find(d => d.id === id);
+            if (item) {
+                item.status = newStatus;
+                saveData();
+                renderTables();
+            }
+        }
+
+        document.getElementById('directorPassword').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') verifyPassword();
+        });
+
+        renderTables();
+    </script>
+</body>
+</html>
