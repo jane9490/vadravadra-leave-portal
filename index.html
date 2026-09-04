@@ -538,21 +538,22 @@
         </div>
     </div>
 
+    <!-- Firebase Realtime Database SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDpg7qQRj146fIuaABbme2TuXi7ZE6HFr8",
             authDomain: "vadravadra-leave.firebaseapp.com",
+            databaseURL: "https://vadravadra-leave-default-rtdb.firebaseio.com",
             projectId: "vadravadra-leave",
             storageBucket: "vadravadra-leave.firebasestorage.app",
             messagingSenderId: "1072592639523",
-            appId: "1:1072592639523:web:143ac54d3e20d7c0fec396",
-            measurementId: "G-96QXC18KMK"
+            appId: "1:1072592639523:web:143ac54d3e20d7c0fec396"
         };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const db = firebase.database();
 
         const LEAVE_CAPS = { annual: 10, sick: 10, bereavement: 3 };
         const DIRECTOR_PASSWORD = "jane9490";
@@ -567,12 +568,15 @@
 
         let leaveData = [];
 
-        // Listen for cloud database updates on all mobile/desktop devices
-        db.collection("leave_requests").onSnapshot((snapshot) => {
+        // Realtime listener
+        db.ref('leave_requests').on('value', (snapshot) => {
             leaveData = [];
-            snapshot.forEach((doc) => {
-                leaveData.push({ id: doc.id, ...doc.data() });
-            });
+            const data = snapshot.val();
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    leaveData.push({ id: key, ...data[key] });
+                });
+            }
             renderTables();
         });
 
@@ -774,9 +778,9 @@
                 const available = LEAVE_CAPS[selectedType] - currentBalances[selectedType];
                 if (available <= 0) {
                     finalType = 'unpaid';
-                    alert(`Notice: Your ${selectedType} leave quota is fully exhausted. This application has been automatically converted to Leave Without Pay (LWOP).`);
+                    alert(`Notice: Your ${selectedType} leave quota is fully exhausted. Automatically converting to LWOP.`);
                 } else if (days > available) {
-                    alert(`Notice: You only have ${available} day(s) left for ${selectedType} leave. Please adjust your request or submit as Leave Without Pay.`);
+                    alert(`Notice: You only have ${available} day(s) left for ${selectedType} leave.`);
                     return;
                 }
             }
@@ -798,16 +802,14 @@
                 status: 'pending'
             };
 
-            // Save entry directly to cloud database
-            db.collection("leave_requests").add(newItem).then(() => {
+            db.ref('leave_requests').push(newItem).then(() => {
                 document.getElementById('leaveForm').reset();
                 alert('Leave application submitted for Director approval.');
             });
         }
 
         function processLeave(id, newStatus) {
-            // Update request status directly in cloud database
-            db.collection("leave_requests").doc(id).update({
+            db.ref('leave_requests/' + id).update({
                 status: newStatus
             });
         }
