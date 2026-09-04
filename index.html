@@ -373,7 +373,7 @@
             <select id="userRole" onchange="handleRoleChange()">
                 <option value="E1">Sanjeet Kumar (Staff)</option>
                 <option value="E2">Elizabeth Raju (Manager)</option>
-                <option value="E3">Makita Talei (Manager RHub)</option>
+                <option value="E3">Makita Talei (Staff)</option>
                 <option value="director">Director Access (Sanjeev Naidu)</option>
             </select>
             <button id="logoutBtn" class="btn-logout" onclick="logoutDirector()">Log Out</button>
@@ -466,13 +466,13 @@
 
         <div id="historyTab" class="tab-content staff-only-content">
             <div class="panel">
-                <div class="panel-title">My Application Audit Log</div>
+                <div class="panel-title">My Application Audit Log & Leave History</div>
                 <table>
                     <thead>
                         <tr>
-                            <th>Ref Date</th>
+                            <th>Applied Date</th>
                             <th>Category</th>
-                            <th>Period</th>
+                            <th>Leave Period (Dates Taken)</th>
                             <th>Days</th>
                             <th>Attachment</th>
                             <th>Status</th>
@@ -492,7 +492,7 @@
                         <tr>
                             <th>Applicant</th>
                             <th>Category</th>
-                            <th>Period</th>
+                            <th>Dates Requested</th>
                             <th>Days</th>
                             <th>Reason & Attachment</th>
                             <th>Action</th>
@@ -568,7 +568,6 @@
 
         let leaveData = [];
 
-        // Realtime listener
         db.ref('leave_requests').on('value', (snapshot) => {
             leaveData = [];
             const data = snapshot.val();
@@ -699,13 +698,14 @@
             leaveData.forEach(item => {
                 const attachmentCell = item.fileName ? `<span class="file-link" onclick="alert('Viewing attachment: ${item.fileName}')">📎 ${item.fileName}</span>` : 'None';
                 const typeDisplay = item.type === 'unpaid' ? 'Leave Without Pay' : item.type;
+                const dateRange = `<strong>${item.start}</strong> to <strong>${item.end}</strong>`;
 
                 if (item.empId === activeEmp) {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${item.appliedDate || today}</td>
                         <td style="text-transform: capitalize;">${typeDisplay}</td>
-                        <td>${item.start} to ${item.end}</td>
+                        <td style="color: var(--store-dark-blue);">${dateRange}</td>
                         <td><strong>${item.days}</strong></td>
                         <td>${attachmentCell}</td>
                         <td><span class="status status-${item.status}">${item.status}</span></td>
@@ -718,8 +718,8 @@
                     tr.innerHTML = `
                         <td><strong>${item.name}</strong> (${item.role})</td>
                         <td style="text-transform: capitalize;">${typeDisplay}</td>
-                        <td>${item.start} to ${item.end}</td>
-                        <td>${item.days}</td>
+                        <td style="color: var(--store-dark-blue);">${dateRange}</td>
+                        <td><strong>${item.days}</strong></td>
                         <td>${item.notes || '<em>No notes</em>'}<br>Attachment: ${attachmentCell}</td>
                         <td>
                             <button class="btn-approve" onclick="processLeave('${item.id}', 'approved')">Approve</button>
@@ -745,7 +745,7 @@
             });
 
             if (hTable.children.length === 0) {
-                hTable.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No leave history recorded.</td></tr>';
+                hTable.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No leave history recorded for this account.</td></tr>';
             }
             if (aTable.children.length === 0) {
                 aTable.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No pending requests awaiting approval.</td></tr>';
