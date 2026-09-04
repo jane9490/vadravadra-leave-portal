@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vadravadra Grocery Store - Online Leave Portal</title>
+    <style>
+        :root {
+            --store-blue: #1d4ed8;
+            --store-dark-blue: #1e3a8a;
+            --store-light-blue: #3b82f6;
+            --fmf-red: #dc2626;
+            --bg-gray: #f1f5f9;
+            --card-white: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --success-green: #16a34a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            padding-bottom: 40px;
+        }
+
+        .header-banner {
+            background: linear-gradient(135deg, var(--store-dark-blue), var(--store-blue));
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-bottom: 4px solid var(--fmf-red);
+        }
+
+        .store-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fmf-badge {
+            background: #ffffff;
+            color: var(--fmf-red);
+            font-weight: 900;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            border: 2px solid var(--fmf-red);
+        }
+
+        .header-banner h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .header-banner .subtitle {
+            font-size: 0.8rem;
+            color: #93c5fd;
+        }
+
+        .role-switcher {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .role-switcher select {
+            padding: 6px 10px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #ffffff;
+            color: var(--text-dark);
+        }
+
+        .btn-logout {
+            background-color: var(--fmf-red);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        .services-bar {
+            background: #ffffff;
+            border-left: 4px solid var(--fmf-red);
+            padding: 10px 16px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .service-tag {
+            background: #fee2e2;
+            color: var(--fmf-red);
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .tab-bar {
+            display: flex;
+            border-bottom: 3px solid var(--store-blue);
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 4px 4px 0 0;
+            overflow: hidden;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-dark);
+            border-bottom: 4px solid transparent;
+        }
+
+        .tab-btn.active {
+            border-bottom: 4px solid var(--store-light-blue);
+            background: #eff6ff;
+            color: var(--store-blue);
+        }
+
+        .balance-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .b-card {
+            background: white;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--store-blue);
+            border-radius: 4px;
+        }
+
+        .b-card.sick { border-left-color: var(--fmf-red); }
+        .b-card.bereavement { border-left-color: #6b21a8; }
+
+        .b-card h4 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .b-card .num {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--store-dark-blue);
+            margin: 4px 0;
+        }
+
+        .b-card .sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--store-dark-blue);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 600px) {
+            .form-group.full { grid-column: span 1; }
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        input, select, textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--store-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        input[readonly] {
+            background-color: #f8fafc;
+        }
+
+        .btn-submit {
+            background-color: var(--store-blue);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .status {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .status-approved { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        th {
+            background-color: #eff6ff;
+            color: var(--store-dark-blue);
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid var(--store-blue);
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .btn-approve { background: var(--success-green); color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; }
+        .btn-reject { background: var(--fmf-red); color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 340px;
+            text-align: center;
+            border-top: 4px solid var(--store-blue);
+        }
+
+        .modal h3 {
+            margin-bottom: 8px;
+            color: var(--store-dark-blue);
+        }
+
+        .modal input {
+            width: 100%;
+            margin: 12px 0 16px 0;
+            text-align: center;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-modal-submit {
+            flex: 1;
+            background: var(--store-blue);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-modal-cancel {
+            flex: 1;
+            background: var(--text-muted);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-banner">
+        <div class="store-brand">
+            <span class="fmf-badge">FMF</span>
+            <div>
+                <h1>Vadravadra Grocery Store</h1>
+                <div class="subtitle">Online Employee Leave Portal</div>
+            </div>
+        </div>
+        <div class="role-switcher">
+            <label for="userRole">Access Level:</label>
+            <select id="userRole" onchange="handleRoleChange()">
+                <option value="staff">Staff View</option>
+                <option value="director">Director Access (Sanjeev Naidu)</option>
+            </select>
+            <button id="logoutBtn" class="btn-logout" onclick="logoutDirector()">Log Out</button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <div class="services-bar">
+            <span class="service-tag">STORE SERVICES</span>
+            <span>M-PAISA & MY CASH Cash Out / Withdrawal</span>
+            <span style="color: #cbd5e1;">|</span>
+            <span>Gas / Recharge Point</span>
+        </div>
+
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab(event, 'applyTab')">Apply for Leave</button>
+            <button class="tab-btn" onclick="switchTab(event, 'historyTab')">My Leave Records</button>
+            <button class="tab-btn" id="directorTabBtn" onclick="switchTab(event, 'approvalTab')" style="display: none;">Director Approval Queue</button>
+        </div>
+
+        <!-- TAB 1: APPLY FOR LEAVE -->
+        <div id="applyTab" class="tab-content active">
+
+            <div class="balance-cards">
+                <div class="b-card">
+                    <h4>Annual Leave</h4>
+                    <div class="num" id="annualBal">10.0</div>
+                    <div class="sub">Days Available (10 Days Cap)</div>
+                </div>
+                <div class="b-card sick">
+                    <h4>Sick Sheets</h4>
+                    <div class="num" id="sickBal">10.0</div>
+                    <div class="sub">Days Available (10 Days Cap)</div>
+                </div>
+                <div class="b-card bereavement">
+                    <h4>Bereavement Leave</h4>
+                    <div class="num" id="bereavementBal">3.0</div>
+                    <div class="sub">Days Available (3 Days Cap)</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Submit Statutory Leave Application</div>
+                <form id="leaveForm" onsubmit="submitForm(event)">
+                    <div class="form-grid">
+                        
+                        <div class="form-group">
+                            <label for="empSelect">Employee Profile</label>
+                            <select id="empSelect" onchange="changeEmployee()">
+                                <option value="E1">Sanjeet Kumar - Sales Assistant</option>
+                                <option value="E2">Elizabeth Raju - Staff Member</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="leaveType">Leave Category</label>
+                            <select id="leaveType" required>
+                                <option value="annual">Annual Leave</option>
+                                <option value="sick">Sick Leave (Medical Certificate Attached)</option>
+                                <option value="bereavement">Bereavement Leave</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="startDate">First Working Day Off</label>
+                            <input type="date" id="startDate" required onchange="calculateDays()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="endDate">Last Working Day Off</label>
+                            <input type="date" id="endDate" required onchange="calculateDays()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalDays">Total Days Requested</label>
+                            <input type="number" id="totalDays" min="0.5" step="0.5" readonly placeholder="Auto-calculated">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="shiftCover">Counter / Sales Shift Covered By</label>
+                            <input type="text" id="shiftCover" placeholder="e.g. Covered by Elizabeth on register" required>
+                        </div>
+
+                        <div class="form-group full">
+                            <label for="notes">Reason / Notes</label>
+                            <textarea id="notes" rows="2" placeholder="Provide details (e.g. Doctor certificate attached, family requirement)" required></textarea>
+                        </div>
+
+                    </div>
+                    <button type="submit" class="btn-submit">Submit Application to Director</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 2: STAFF HISTORY -->
+        <div id="historyTab" class="tab-content">
+            <div class="panel">
+                <div class="panel-title">My Application Audit Log</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ref Date</th>
+                            <th>Category</th>
+                            <th>Period</th>
+                            <th>Days</th>
+                            <th>Shift Cover</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: DIRECTOR APPROVAL QUEUE -->
+        <div id="approvalTab" class="tab-content">
+            <div class="panel">
+                <div class="panel-title">Pending Leave Requests (Director Sanjeev Naidu View)</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Applicant</th>
+                            <th>Category</th>
+                            <th>Period</th>
+                            <th>Days</th>
+                            <th>Reason & Shift Cover</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approvalTable">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Password Modal -->
+    <div class="modal-overlay" id="passwordModal">
+        <div class="modal">
+            <h3>Director Verification</h3>
+            <p style="font-size:0.85rem; color:#64748b;">Enter password for Sanjeev Naidu access:</p>
+            <input type="password" id="directorPassword" placeholder="••••">
+            <div class="modal-buttons">
+                <button class="btn-modal-submit" onclick="verifyPassword()">Unlock</button>
+                <button class="btn-modal-cancel" onclick="cancelPasswordPrompt()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const LEAVE_CAPS = { annual: 10, sick: 10, bereavement: 3 };
+        const DIRECTOR_PASSWORD = "admin"; // Default Password
+        let isDirectorAuthenticated = false;
+
+        // Load data from browser storage or start fresh
+        let leaveData = JSON.parse(localStorage.getItem('vadravadra_leave_db')) || [];
+
+        function saveData() {
+            localStorage.setItem('vadravadra_leave_db', JSON.stringify(leaveData));
+        }
+
+        function switchTab(evt, tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        function handleRoleChange() {
+            const roleSelect = document.getElementById('userRole');
+            if (roleSelect.value === 'director') {
+                if (!isDirectorAuthenticated) {
+                    document.getElementById('passwordModal').style.display = 'flex';
+                    document.getElementById('directorPassword').value = '';
+                    document.getElementById('directorPassword').focus();
+                } else {
+                    enableDirectorAccess();
+                }
+            } else {
+                disableDirectorAccess();
+            }
+        }
+
+        function verifyPassword() {
+            const pwdInput = document.getElementById('directorPassword').value;
+            if (pwdInput === DIRECTOR_PASSWORD) {
+                isDirectorAuthenticated = true;
+                document.getElementById('passwordModal').style.display = 'none';
+                enableDirectorAccess();
+            } else {
+                alert('Incorrect Password. Restricted to Director Sanjeev Naidu.');
+                cancelPasswordPrompt();
+            }
+        }
+
+        function cancelPasswordPrompt() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('userRole').value = 'staff';
+            disableDirectorAccess();
+        }
+
+        function enableDirectorAccess() {
+            const dirBtn = document.getElementById('directorTabBtn');
+            dirBtn.style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+            dirBtn.click();
+        }
+
+        function disableDirectorAccess() {
+            const dirBtn = document.getElementById('directorTabBtn');
+            dirBtn.style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'none';
+            if (document.getElementById('approvalTab').classList.contains('active')) {
+                document.querySelectorAll('.tab-btn')[0].click();
+            }
+        }
+
+        function logoutDirector() {
+            isDirectorAuthenticated = false;
+            document.getElementById('userRole').value = 'staff';
+            disableDirectorAccess();
+            alert('Logged out of Director access.');
+        }
+
+        function calculateDays() {
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            if (s && e) {
+                const d1 = new Date(s);
+                const d2 = new Date(e);
+                if (d2 >= d1) {
+                    const count = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+                    document.getElementById('totalDays').value = count;
+                } else {
+                    document.getElementById('totalDays').value = 0;
+                }
+            }
+        }
+
+        function updateBalances() {
+            const activeEmp = document.getElementById('empSelect').value;
+            let used = { annual: 0, sick: 0, bereavement: 0 };
+
+            leaveData.filter(d => d.empId === activeEmp && (d.status === 'approved' || d.status === 'pending')).forEach(item => {
+                if (used[item.type] !== undefined) {
+                    used[item.type] += item.days;
+                }
+            });
+
+            document.getElementById('annualBal').innerText = (LEAVE_CAPS.annual - used.annual).toFixed(1);
+            document.getElementById('sickBal').innerText = (LEAVE_CAPS.sick - used.sick).toFixed(1);
+            document.getElementById('bereavementBal').innerText = (LEAVE_CAPS.bereavement - used.bereavement).toFixed(1);
+        }
+
+        function renderTables() {
+            const activeEmp = document.getElementById('empSelect').value;
+            const hTable = document.getElementById('historyTable');
+            const aTable = document.getElementById('approvalTable');
+
+            hTable.innerHTML = '';
+            aTable.innerHTML = '';
+
+            const today = new Date().toISOString().split('T')[0];
+
+            leaveData.forEach(item => {
+                if (item.empId === activeEmp) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.appliedDate || today}</td>
+                        <td style="text-transform: capitalize;">${item.type}</td>
+                        <td>${item.start} to ${item.end}</td>
+                        <td><strong>${item.days}</strong></td>
+                        <td>${item.cover}</td>
+                        <td><span class="status status-${item.status}">${item.status}</span></td>
+                    `;
+                    hTable.appendChild(tr);
+                }
+
+                if (item.status === 'pending') {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${item.name}</strong> (${item.role})</td>
+                        <td style="text-transform: capitalize;">${item.type}</td>
+                        <td>${item.start} to ${item.end}</td>
+                        <td>${item.days}</td>
+                        <td>${item.notes} | <em>Cover: ${item.cover}</em></td>
+                        <td>
+                            <button class="btn-approve" onclick="processLeave(${item.id}, 'approved')">Approve</button>
+                            <button class="btn-reject" onclick="processLeave(${item.id}, 'rejected')">Reject</button>
+                        </td>
+                    `;
+                    aTable.appendChild(tr);
+                }
+            });
+
+            if (hTable.children.length === 0) {
+                hTable.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No leave history recorded.</td></tr>';
+            }
+            if (aTable.children.length === 0) {
+                aTable.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No pending requests awaiting approval.</td></tr>';
+            }
+
+            updateBalances();
+        }
+
+        function changeEmployee() {
+            renderTables();
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            const days = parseFloat(document.getElementById('totalDays').value);
+            if (!days || days <= 0) {
+                alert('Please select valid start and end dates.');
+                return;
+            }
+
+            const empSelect = document.getElementById('empSelect');
+            const empNameRole = empSelect.options[empSelect.selectedIndex].text.split(' - ');
+
+            const newItem = {
+                id: Date.now(),
+                empId: empSelect.value,
+                name: empNameRole[0],
+                role: empNameRole[1],
+                type: document.getElementById('leaveType').value,
+                start: document.getElementById('startDate').value,
+                end: document.getElementById('endDate').value,
+                days: days,
+                cover: document.getElementById('shiftCover').value,
+                notes: document.getElementById('notes').value,
+                appliedDate: new Date().toISOString().split('T')[0],
+                status: 'pending'
+            };
+
+            leaveData.push(newItem);
+            saveData();
+            renderTables();
+            document.getElementById('leaveForm').reset();
+            alert('Leave application submitted for Director approval.');
+        }
+
+        function processLeave(id, newStatus) {
+            const item = leaveData.find(d => d.id === id);
+            if (item) {
+                item.status = newStatus;
+                saveData();
+                renderTables();
+            }
+        }
+
+        document.getElementById('directorPassword').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') verifyPassword();
+        });
+
+        renderTables();
+    </script>
+</body>
+</html>
